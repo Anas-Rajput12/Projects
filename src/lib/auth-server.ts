@@ -1,4 +1,3 @@
-import { auth } from "./auth-config";
+import { auth, currentUser } from "@clerk/nextjs/server";
 
-// Export the same auth configuration for server-side usage
-export { auth };
+export { auth, currentUser };
