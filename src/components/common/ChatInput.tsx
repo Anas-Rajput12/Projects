@@ -1,15 +1,10 @@
 'use client';
 
+import React, { useEffect, useRef, useState } from 'react';
 import { Paperclip, Mic, Send, Square } from 'lucide-react';
-import { useRef, useState, useEffect } from 'react';
 
-declare global {
-  interface Window {
-    SpeechRecognition: any;
-    webkitSpeechRecognition: any;
-  }
-}
 
+// ✅ Tutor type
 interface Tutor {
   name: string;
   color: string;
@@ -21,39 +16,40 @@ interface Tutor {
   description: string;
 }
 
+
+// ✅ Props type (Vercel safe)
+interface ChatInputProps {
+  question: string;
+  setQuestion: React.Dispatch<React.SetStateAction<string>>;
+  handleSend: () => void;
+  currentTutor: Tutor;
+}
+
+
 export default function ChatInput({
   question,
   setQuestion,
   handleSend,
   currentTutor,
-}: {
-  question: string;
-  setQuestion: (value: string) => void;
-  handleSend: () => void;
-  currentTutor: Tutor;
-}) {
+}: ChatInputProps) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
   const recognitionRef = useRef<any>(null);
 
   const [isRecording, setIsRecording] = useState(false);
-  const [voiceSupported, setVoiceSupported] = useState(true);
 
-  /**
-   * Initialize Speech Recognition safely
-   */
+
+  // ✅ Initialize SpeechRecognition safely
   useEffect(() => {
 
     if (typeof window === 'undefined') return;
 
     const SpeechRecognition =
-      window.SpeechRecognition ||
-      window.webkitSpeechRecognition;
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
 
-    if (!SpeechRecognition) {
-      setVoiceSupported(false);
-      return;
-    }
+    if (!SpeechRecognition) return;
 
     const recognition = new SpeechRecognition();
 
@@ -61,22 +57,17 @@ export default function ChatInput({
     recognition.lang = 'en-US';
     recognition.interimResults = false;
 
-   recognition.onresult = (event: any) => {
+    recognition.onresult = (event: any) => {
 
-  const transcript =
-    event.results[0][0].transcript;
+      const transcript =
+        event.results[0][0].transcript;
 
-  setQuestion((prev: string) =>
-    prev ? prev + ' ' + transcript : transcript
-  );
-
-};
-
-    recognition.onend = () => {
-      setIsRecording(false);
+      setQuestion((prev: string) =>
+        prev ? prev + ' ' + transcript : transcript
+      );
     };
 
-    recognition.onerror = () => {
+    recognition.onend = () => {
       setIsRecording(false);
     };
 
@@ -85,9 +76,7 @@ export default function ChatInput({
   }, [setQuestion]);
 
 
-  /**
-   * Start voice recording
-   */
+  // ✅ Start voice
   const startVoice = () => {
 
     if (!recognitionRef.current) {
@@ -100,21 +89,18 @@ export default function ChatInput({
   };
 
 
-  /**
-   * Stop voice recording
-   */
+  // ✅ Stop voice
   const stopVoice = () => {
 
     if (!recognitionRef.current) return;
 
     recognitionRef.current.stop();
+
     setIsRecording(false);
   };
 
 
-  /**
-   * File attach handler
-   */
+  // ✅ File attach
   const handleFileAttach = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -123,28 +109,30 @@ export default function ChatInput({
 
     if (!file) return;
 
-    console.log('File selected:', file);
+    console.log('Selected file:', file);
 
-    // TODO: Upload file to backend
+    // TODO: upload to backend
+    // Example:
+    // uploadFile(file)
   };
 
 
   return (
-
     <div className="p-2 sm:p-3 border-t bg-white">
 
       <div className="
         flex items-center gap-2
         border rounded-xl
         px-2 py-1
-        shadow-sm
         focus-within:ring-2 focus-within:ring-blue-400
         transition
       ">
 
         {/* Attach Button */}
         <button
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() =>
+            fileInputRef.current?.click()
+          }
           className="
             p-2 rounded-lg
             hover:bg-gray-100
@@ -154,6 +142,8 @@ export default function ChatInput({
           <Paperclip size={20} />
         </button>
 
+
+        {/* Hidden file input */}
         <input
           type="file"
           ref={fileInputRef}
@@ -169,7 +159,9 @@ export default function ChatInput({
             setQuestion(e.target.value)
           }
           onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSend();
+            if (e.key === 'Enter') {
+              handleSend();
+            }
           }}
           placeholder="Ask anything..."
           className="
@@ -182,30 +174,29 @@ export default function ChatInput({
 
 
         {/* Voice Button */}
-        {voiceSupported && (
-          <button
-            onClick={
+        <button
+          onClick={
+            isRecording
+              ? stopVoice
+              : startVoice
+          }
+          className={`
+            p-2 rounded-lg transition
+            ${
               isRecording
-                ? stopVoice
-                : startVoice
+                ? 'bg-red-500 text-white animate-pulse'
+                : 'hover:bg-gray-100'
             }
-            className={`
-              p-2 rounded-lg transition
-              ${
-                isRecording
-                  ? 'bg-red-500 text-white animate-pulse'
-                  : 'hover:bg-gray-100'
-              }
-            `}
-          >
+          `}
+        >
 
-            {isRecording
+          {
+            isRecording
               ? <Square size={20} />
               : <Mic size={20} />
-            }
+          }
 
-          </button>
-        )}
+        </button>
 
 
         {/* Send Button */}
@@ -229,10 +220,9 @@ export default function ChatInput({
 
         </button>
 
+
       </div>
 
     </div>
-
   );
-
 }
