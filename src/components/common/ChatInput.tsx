@@ -61,15 +61,16 @@ export default function ChatInput({
     recognition.lang = 'en-US';
     recognition.interimResults = false;
 
-    recognition.onresult = (event: any) => {
+   recognition.onresult = (event: any) => {
 
-      const transcript =
-        event.results[0][0].transcript;
+  const transcript =
+    event.results[0][0].transcript;
 
-      setQuestion(prev =>
-        prev ? prev + ' ' + transcript : transcript
-      );
-    };
+  setQuestion((prev: string) =>
+    prev ? prev + ' ' + transcript : transcript
+  );
+
+};
 
     recognition.onend = () => {
       setIsRecording(false);
