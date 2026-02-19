@@ -11,8 +11,8 @@ const Navbar = () => {
 
   // Define which pages are accessible to authenticated users
   const authLinks = [
-    { name: 'Dashboard', path: '/dashboard' },
-    { name: 'Subjects', path: '/subjects' },
+    // { name: 'Dashboard', path: '/dashboard' },
+    // { name: 'Subjects', path: '/subjects' },
     //{ name: 'Progress', path: '/progress' },
     //{ name: 'Resources', path: '/resources' },
   ];
